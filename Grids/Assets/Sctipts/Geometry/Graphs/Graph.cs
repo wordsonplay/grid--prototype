@@ -29,6 +29,11 @@ namespace WordsOnPlay.Geometry
         private Face exterior;          // external face
         public Face Exterior => exterior;
 
+        public int CountVertices { get { return vertices.Count; }}
+        public int CountEdges { get { return edges.Count; }}
+        public int CountFaces { get { return faces.Count; }}
+
+
 #region Constructors
         public Graph()
         {
@@ -80,8 +85,7 @@ namespace WordsOnPlay.Geometry
         {
             HalfEdge eAB = new HalfEdge(va);
             HalfEdge eBA = new HalfEdge(vb);
-            eAB.flip = eBA;
-            eBA.flip = eAB;
+            eAB.Flip = eBA;
 
             edges.Add(eAB);
             edges.Add(eBA);
@@ -97,7 +101,7 @@ namespace WordsOnPlay.Geometry
 
         public bool RemoveEdgePair(HalfEdge e)
         {
-            return RemoveEdge(e) && RemoveEdge(e.flip);
+            return RemoveEdge(e) && RemoveEdge(e.Flip);
         }
 #endregion
 

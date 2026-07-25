@@ -179,23 +179,23 @@ public partial class Triangulation : IEnumerable<Triangle>
         Vertex vc = graph.AddVertex(c, "Rc");
 
         HalfEdge eab = graph.AddEdge(va, vb);
-        HalfEdge eba = eab.flip;
+        HalfEdge eba = eab.Flip;
         HalfEdge ebc = graph.AddEdge(vb, vc);
-        HalfEdge ecb = ebc.flip;
+        HalfEdge ecb = ebc.Flip;
         HalfEdge eca = graph.AddEdge(vc, va);
-        HalfEdge eac = eca.flip;
+        HalfEdge eac = eca.Flip;
                     
         va.edge = eab;
         vb.edge = ebc;
         vc.edge = eca;
 
-        eab.next = ebc;
-        ebc.next = eca;
-        eca.next = eab;
+        eab.Next = ebc;
+        ebc.Next = eca;
+        eca.Next = eab;
 
-        ecb.next = eba;
-        eba.next = eac;
-        eac.next = ecb;
+        ecb.Next = eba;
+        eba.Next = eac;
+        eac.Next = ecb;
 
         Face face = graph.AddFace(eab);
         eab.face = face;
@@ -236,11 +236,11 @@ public partial class Triangulation : IEnumerable<Triangle>
         HalfEdge eva, eav, evb, ebv, evc, ecv;
 
         eva = graph.AddEdge(v, a);
-        eav = eva.flip;
+        eav = eva.Flip;
         evb = graph.AddEdge(v, b);
-        ebv = evb.flip;
+        ebv = evb.Flip;
         evc = graph.AddEdge(v, c);
-        ecv = evc.flip;
+        ecv = evc.Flip;
 
         v.edge = eva;
 
@@ -310,12 +310,12 @@ public partial class Triangulation : IEnumerable<Triangle>
         //     B                   B
 
         HalfEdge ebd = e;
-        HalfEdge eda = ebd.next;
-        HalfEdge eab = eda.next;
+        HalfEdge eda = ebd.Next;
+        HalfEdge eab = eda.Next;
 
-        HalfEdge edb = ebd.flip;
-        HalfEdge ebc = edb.next;
-        HalfEdge ecd = ebc.next;
+        HalfEdge edb = ebd.Flip;
+        HalfEdge ebc = edb.Next;
+        HalfEdge ecd = ebc.Next;
 
         Vertex va = eab.fromVertex;
         Vertex vb = ebc.fromVertex;
@@ -332,7 +332,7 @@ public partial class Triangulation : IEnumerable<Triangle>
         graph.RemoveFace(fdbc);
 
         HalfEdge eac = graph.AddEdge(va, vc);
-        HalfEdge eca = eac.flip;
+        HalfEdge eca = eac.Flip;
         Debug.Log($"[Triangulation.FlipEdge] Flipping {e} to {eac}");
 
         Triangle tabc = MakeTriangle(eab, ebc, eca);
@@ -359,9 +359,9 @@ public partial class Triangulation : IEnumerable<Triangle>
 
     private Triangle MakeTriangle(HalfEdge eab, HalfEdge ebc, HalfEdge eca)
     {
-        eca.next = eab;
-        eab.next = ebc;
-        ebc.next = eca;
+        eca.Next = eab;
+        eab.Next = ebc;
+        ebc.Next = eca;
 
         Face fabc = graph.AddFace(eca);
         eca.face = fabc;
@@ -376,7 +376,7 @@ public partial class Triangulation : IEnumerable<Triangle>
 
     private bool IsInterior(HalfEdge edge)
     {
-        return edge.face != null && edge.flip.face != null;
+        return edge.face != null && edge.Flip.face != null;
     }
 
     private bool IsDelaunay(HalfEdge edge) 
@@ -406,12 +406,12 @@ public partial class Triangulation : IEnumerable<Triangle>
         // https://en.wikipedia.org/wiki/Delaunay_triangulation#Visual_Delaunay_definition:_Flipping
 
         HalfEdge ebd = edge;
-        HalfEdge eda = ebd.next;
-        HalfEdge eab = eda.next;
+        HalfEdge eda = ebd.Next;
+        HalfEdge eab = eda.Next;
 
-        HalfEdge edb = ebd.flip;
-        HalfEdge ebc = edb.next;
-        HalfEdge ecd = ebc.next;
+        HalfEdge edb = ebd.Flip;
+        HalfEdge ebc = edb.Next;
+        HalfEdge ecd = ebc.Next;
 
         Vector2 a = eab.fromVertex;
         Vector2 b = ebd.fromVertex;
@@ -430,9 +430,9 @@ public partial class Triangulation : IEnumerable<Triangle>
     private Face CreateFace(HalfEdge eab, HalfEdge ebc, HalfEdge eca)
     {
         Face face = graph.AddFace(eab);
-        eab.next = ebc;
-        ebc.next = eca;
-        eca.next = eab;
+        eab.Next = ebc;
+        ebc.Next = eca;
+        eca.Next = eab;
         eab.face = face;
         ebc.face = face;
         eca.face = face;

@@ -47,7 +47,7 @@ public class Face
             {
                 return false;
             }
-            e = e.next;
+            e = e.Next;
         } while (e != edge);
 
         return true;
@@ -64,13 +64,14 @@ public class Face
             do
             {
                 sb.Append(e.fromVertex);
-                e = e.next;
+                e = e.Next;
             } while (e != edge);            
         }
         sb.Append("]");
 
         return sb.ToString();
     }
+
 }
 
 }

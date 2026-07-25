@@ -36,11 +36,11 @@ namespace WordsOnPlay.Geometry
 
                     do
                     {
-                        eNew.next = eMap[eOld.next];
-                        eNew.flip = eMap[eOld.flip];
+                        eNew.Next = eMap[eOld.Next];
+                        eNew.Flip = eMap[eOld.Flip];
                         eNew.face = fMap[eOld.face];
 
-                        eOld = eOld.flip.next;
+                        eOld = eOld.Flip.Next;
                         eNew = eMap[eOld];
                     } while (eOld != vOld.edge);
                 }
@@ -79,7 +79,7 @@ namespace WordsOnPlay.Geometry
                         HalfEdge eNew = copy.AddEdge(vNew);
                         eMap[eOld] = eNew;
 
-                        eOld = eOld.flip.next;
+                        eOld = eOld.Flip.Next;
                     } while (eOld != vOld.edge);
                 }
             }
@@ -153,38 +153,38 @@ namespace WordsOnPlay.Geometry
         public static Face DeleteEdge(Graph graph, HalfEdge edge)
         {
             DeleteHalfEdge(graph, edge);
-            DeleteHalfEdge(graph, edge.flip);
+            DeleteHalfEdge(graph, edge.Flip);
             return MergeFaces(graph, edge);
         }
 
         private static void DeleteHalfEdge(Graph graph, HalfEdge edge)
         {
             HalfEdge ePrev = PreviousEdge(graph, edge);
-            ePrev.next = edge.flip.next;
+            ePrev.Next = edge.Flip.Next;
 
             if (edge.fromVertex.edge == edge)
             {
                 // set to null if this is the last outgoing edge
-                edge.fromVertex.edge = edge.flip.next == edge ? null : edge.flip.next;
+                edge.fromVertex.edge = edge.Flip.Next == edge ? null : edge.Flip.Next;
             }
 
             if (edge.face.edge == edge)
             {
                 // find a valid edge
-                if (edge.next == edge.flip)
+                if (edge.Next == edge.Flip)
                 {
-                    if (edge.flip.next == edge)
+                    if (edge.Flip.Next == edge)
                     {
                         edge.face.edge = null;    
                     }
                     else
                     {
-                        edge.face.edge = edge.flip.next;
+                        edge.face.edge = edge.Flip.Next;
                     }
                 }
                 else
                 {
-                    edge.face.edge = edge.next; 
+                    edge.face.edge = edge.Next; 
                 }
             }
 
@@ -196,7 +196,7 @@ namespace WordsOnPlay.Geometry
             // Don't delete the exterior face
 
             Face keptFace = edge.face;
-            Face deletedFace = edge.flip.face;
+            Face deletedFace = edge.Flip.face;
 
             if (deletedFace == graph.Exterior)
             {
@@ -210,7 +210,7 @@ namespace WordsOnPlay.Geometry
                 do
                 {
                     e.face = keptFace;
-                    e = e.next;
+                    e = e.Next;
                 }
                 while (e != deletedFace.edge);
 
@@ -224,9 +224,9 @@ namespace WordsOnPlay.Geometry
         {
             HalfEdge ePrev = edge;
 
-            while (ePrev.next != edge)
+            while (ePrev.Next != edge)
             {
-                ePrev = ePrev.next;
+                ePrev = ePrev.Next;
             }
 
             return ePrev;
@@ -266,7 +266,7 @@ namespace WordsOnPlay.Geometry
                     {
                         return $"{e}.fromVertex == {e.fromVertex} != {vertex}";
                     }
-                    e = e.flip.next;
+                    e = e.Flip.Next;
                 }   
                 while (e != vertex.edge);                 
             }
@@ -285,13 +285,31 @@ namespace WordsOnPlay.Geometry
 
         public static string VerifyEdge(Graph graph, HalfEdge edge)
         {
-            if (edge.flip == null)
+            if (edge.Flip == null)
             {
-                return $"{edge}.flip == null";
+                return $"{edge}.Flip == null";
             }
-            else if (edge.flip.flip != edge)
+            else if (edge.Flip.Flip != edge)
             {
-                return $"{edge}.flip.flip == {edge.flip.flip} != {edge}";
+                return $"{edge}.Flip.Flip == {edge.Flip.Flip} != {edge}";
+            }
+
+            if (edge.Next == null)
+            {
+                return $"{edge}.Next == null";                
+            }
+            else if (edge.Next.Prev != edge)
+            {
+                return $"{edge}.Next.Prev == {edge.Next.Prev} != {edge}";                
+            }
+
+            if (edge.Prev == null)
+            {
+                return $"{edge}.Prev == null";                
+            }
+            else if (edge.Prev.Next != edge)
+            {
+                return $"{edge}.Prev.Next == {edge.Prev.Next} != {edge}";                
             }
 
             if (edge.fromVertex == null)
@@ -338,7 +356,7 @@ namespace WordsOnPlay.Geometry
                     {
                         return $"{e}.face == {e.face} != {face}";
                     }
-                    e = e.next;
+                    e = e.Next;
                 } while (e != face.edge);
             }
 
@@ -358,8 +376,24 @@ namespace WordsOnPlay.Geometry
                 do
                 {
                     count++;
-                    e = e.flip.next;
+                    e = e.Flip.Next;
                 } while (e != v.edge);
+            }
+            return count;
+        }
+
+        static public int EdgeCount(Face f)
+        {
+            int count = 0;
+            HalfEdge e = f.edge;
+
+            if (e != null)
+            {
+                do
+                {
+                    count++;
+                    e = e.Next;
+                } while (e != f.edge);
             }
             return count;
         }

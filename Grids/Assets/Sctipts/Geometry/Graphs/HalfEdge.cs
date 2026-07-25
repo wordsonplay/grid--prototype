@@ -14,9 +14,39 @@ namespace WordsOnPlay.Geometry
 public class HalfEdge 
 {
     public Vertex fromVertex;
-    public HalfEdge next;
-    public HalfEdge flip;
     public Face face;
+
+    private HalfEdge next, prev;
+    public HalfEdge Next
+    {
+        get { return next; }
+        set 
+        { 
+            next = value; 
+            value.prev = this;
+        }
+    }
+    public HalfEdge Prev
+    {
+        get { return prev; }
+        set 
+        { 
+            prev = value; 
+            value.next = this;
+        }
+    }
+
+    private HalfEdge flip;
+    public HalfEdge Flip
+    {
+        get { return flip; }
+        set
+        {
+            flip = value;
+            value.flip = this;            
+        }        
+    }
+
 
     public Vector2 Direction => next.fromVertex - fromVertex;
     public override string ToString() => $"E[{fromVertex},{flip.fromVertex}]";

@@ -38,6 +38,19 @@ public class GeometryGizmos
         return mesh;
     }
 
+    public static void DrawGizmo(Graph g, Transform transform = null)
+    {
+        foreach (Vertex v in g.Vertices)
+        {
+            DrawGizmo(v, transform : transform);            
+        }
+
+        foreach (HalfEdge e in g.Edges)
+        {
+            DrawGizmo(e, transform : transform);            
+        }
+    }
+
     public static void DrawGizmo(
         Vertex v, float radius = defaultVertexRadius, bool solid = false, Transform transform = null) 
     {
@@ -61,7 +74,7 @@ public class GeometryGizmos
     public static void DrawGizmo(HalfEdge e, Transform transform = null) 
     {
         Vector2 a = e.fromVertex.position;
-        Vector2 b = e.next.fromVertex.position;
+        Vector2 b = e.Next.fromVertex.position;
 
         // arrow
         Vector2 p = Vector3.Lerp(a,b,edgeArrowPercent);
@@ -96,7 +109,7 @@ public class GeometryGizmos
             do 
             {
                 DrawTriangleGizmo(e, true, transform);
-                e = e.next;
+                e = e.Next;
             } while (e != f.edge);
  
         }
@@ -105,7 +118,7 @@ public class GeometryGizmos
             do 
             {
                 DrawGizmo(e);
-                e = e.next;
+                e = e.Next;
             } while (e != f.edge);
         }
     }
@@ -114,8 +127,8 @@ public class GeometryGizmos
     public static void DrawTriangleGizmo(HalfEdge e, bool solid = false, Transform transform = null)
     {
         Vector3 a = e.fromVertex.position;
-        Vector3 b = e.next.fromVertex.position;
-        Vector3 c = e.next.next.fromVertex.position;
+        Vector3 b = e.Next.fromVertex.position;
+        Vector3 c = e.Next.Next.fromVertex.position;
 
         if (transform != null) 
         {

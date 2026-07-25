@@ -91,7 +91,7 @@ public class Grid
                 int j = rng.Next(edges.Count);
                 HalfEdge edge = edges[j];
                 triangles.Remove(face);
-                triangles.Remove(edge.flip.face);
+                triangles.Remove(edge.Flip.face);
 
                 Face merged = GraphOperations.DeleteEdge(graph, edge);
                 squares.Add(merged);
@@ -107,15 +107,15 @@ public class Grid
         HalfEdge e = face.edge;
         do
         {
-            Face n = e.flip.face;
+            Face n = e.Flip.face;
             if (triangles.Contains(n))
             {
-                if (!BadEdge(e) && !BadEdge(e.flip))
+                if (!BadEdge(e) && !BadEdge(e.Flip))
                 {
                     edges.Add(e);                                        
                 }
             }
-            e = e.next;
+            e = e.Next;
         } while (e != face.edge);
 
         return edges;
@@ -133,9 +133,9 @@ public class Grid
 
         // don't remove an edge if the resulting quad would be convex
 
-        Vector2 pC = e.next.fromVertex.position;
-        Vector2 pL = e.next.next.fromVertex.position;
-        Vector2 pR = e.flip.next.next.fromVertex.position;
+        Vector2 pC = e.Next.fromVertex.position;
+        Vector2 pL = e.Next.Next.fromVertex.position;
+        Vector2 pR = e.Flip.Next.Next.fromVertex.position;
 
         if (pC.IsOnLeft(pL, pR))
         {
@@ -173,13 +173,13 @@ public class Grid
 
         do
         {
-            HalfEdge ePrev = eNext.flip;
-            eNext = ePrev.next;
+            HalfEdge ePrev = eNext.Flip;
+            eNext = ePrev.Next;
 
             if (ePrev.face != graph.Exterior)
             {
                 Vertex vLeft = ePrev.fromVertex;
-                Vertex vRight = eNext.next.fromVertex;
+                Vertex vRight = eNext.Next.fromVertex;
                 RelaxTriangle(vertex, vLeft, vRight);                
             }
         }

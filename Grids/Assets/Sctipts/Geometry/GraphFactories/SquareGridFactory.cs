@@ -16,39 +16,47 @@ using WordsOnPlay.Geometry;
 namespace WordsOnPlay.Geometry
 {
 
-public class SquareGrid : Graph
+public class SquareGridFactory : IGraphFactory
 {
 
 #region State
-    private Vector2Int dimension;
-    private Rect bounds;
-    private System.Random rng;
+    public Vector2Int dimension;
+    public System.Random rng;
+    public float jitter = 0;
+    public float zigProb = 0.5f;
 
+    private Graph graph;
     private Vertex[,] vertices;
     private HalfEdge[,] hEdges;
     private HalfEdge[,] vEdges;
 #endregion
     
 #region Constructor
-    public SquareGrid(int width, int height, float zigProb = 0.5f, float jitter = 0, System.Random rng = null) :
+    public SquareGridFactory(int width, int height, float zigProb = 0.5f, float jitter = 0, System.Random rng = null) :
         this(new Vector2Int(width, height), zigProb, jitter, rng)
-    {       
+    {
     }
 
-    public SquareGrid(Vector2Int dimension, float zigProb = 0.5f, float jitter = 0, System.Random rng = null)
+    public SquareGridFactory(Vector2Int dimension, float zigProb = 0.5f, float jitter = 0, System.Random rng = null)
     {
         this.dimension = dimension;
-        this.bounds = new Rect(0,0,dimension.x, dimension.y);
         this.rng = (rng == null ? new System.Random() : rng);
-
-        MakeVertices(jitter);
-        MakeGridEdges();
-        MakeSquares();
-        MakeTriangles(zigProb);
+        this.zigProb = zigProb;
+        this.jitter = jitter;
     }
 #endregion
 
 #region Making the Graph
+    public Graph MakeGraph()
+    {
+        graph = new Graph();
+        MakeVertices(jitter);
+        MakeGridEdges();
+        MakeSquares();
+        MakeTriangles(zigProb);        
+
+        return graph;
+    }
 
     private void MakeVertices(float jitter)
     {
@@ -67,7 +75,7 @@ public class SquareGrid : Graph
                 Vector2 offset = jitter * Vector2.right.Rotate(angle);
                 p += offset;
 
-                vertices[x, y] = AddVertex(p, $"v({x},{y})");
+                vertices[x, y] = graph.AddVertex(p, $"v({x},{y})");
             }
         }
     }
@@ -82,7 +90,7 @@ public class SquareGrid : Graph
         {
             for (int y = 0; y <= dy; y++)
             {
-                hEdges[x, y] = AddEdge(vertices[x, y], vertices[x + 1, y]);
+                hEdges[x, y] = graph.AddEdge(vertices[x, y], vertices[x + 1, y]);
             }
         }
 
@@ -91,7 +99,7 @@ public class SquareGrid : Graph
         {
             for (int y = 0; y < dy; y++)
             {
-                vEdges[x, y] = AddEdge(vertices[x, y], vertices[x, y + 1]);
+                vEdges[x, y] = graph.AddEdge(vertices[x, y], vertices[x, y + 1]);
             }
         }
     }
@@ -112,35 +120,35 @@ public class SquareGrid : Graph
 
                 HalfEdge eab = hEdges[x, y];
                 HalfEdge ebc = vEdges[x + 1, y];
-                HalfEdge ecd = hEdges[x, y + 1].flip;
-                HalfEdge eda = vEdges[x, y].flip;
+                HalfEdge ecd = hEdges[x, y + 1].Flip;
+                HalfEdge eda = vEdges[x, y].Flip;
 
-                eab.face = ebc.face = ecd.face = eda.face = AddFace(eab);
+                eab.face = ebc.face = ecd.face = eda.face = graph.AddFace(eab);
 
-                eab.next = ebc;
-                ebc.next = ecd;
-                ecd.next = eda;
-                eda.next = eab;
+                eab.Next = ebc;
+                ebc.Next = ecd;
+                ecd.Next = eda;
+                eda.Next = eab;
             }
         }
 
         // Set external faces
         for (int x = 0; x < dx; x++)
         {
-            hEdges[x, 0].flip.face = Exterior;
-            hEdges[x, 0].flip.next = (x == 0 ? vEdges[0, 0] : hEdges[x - 1, 0].flip);
+            hEdges[x, 0].Flip.face = graph.Exterior;
+            hEdges[x, 0].Flip.Next = (x == 0 ? vEdges[0, 0] : hEdges[x - 1, 0].Flip);
 
-            hEdges[x, dy].face = Exterior;
-            hEdges[x, dy].next = (x == dx - 1 ? vEdges[dx, dy - 1].flip : hEdges[x + 1, dy]);
+            hEdges[x, dy].face = graph.Exterior;
+            hEdges[x, dy].Next = (x == dx - 1 ? vEdges[dx, dy - 1].Flip : hEdges[x + 1, dy]);
         }
 
         for (int y = 0; y < dy; y++)
         {
-            vEdges[0, y].face = Exterior;
-            vEdges[0, y].next = (y == dy - 1 ? hEdges[0, dy] : vEdges[0, y + 1]);
+            vEdges[0, y].face = graph.Exterior;
+            vEdges[0, y].Next = (y == dy - 1 ? hEdges[0, dy] : vEdges[0, y + 1]);
 
-            vEdges[dx, y].flip.face = Exterior;
-            vEdges[dx, y].flip.next = (y == 0 ? hEdges[dx - 1, 0] : vEdges[dx, y - 1].flip);
+            vEdges[dx, y].Flip.face = graph.Exterior;
+            vEdges[dx, y].Flip.Next = (y == 0 ? hEdges[dx - 1, 0] : vEdges[dx, y - 1].Flip);
         }
     }
 
@@ -161,18 +169,12 @@ public class SquareGrid : Graph
 
                 HalfEdge eab = hEdges[x, y];
                 HalfEdge ebc = vEdges[x + 1, y];
-                HalfEdge ecd = hEdges[x + 1, y].flip;
-                HalfEdge eda = vEdges[x, y].flip;
+                HalfEdge ecd = hEdges[x + 1, y].Flip;
+                HalfEdge eda = vEdges[x, y].Flip;
 
                 float r = (float)rng.NextDouble();
-                bool zig = r <= zigProb;
-                // avoid creating 'ears' on the corners
-                zig = zig || ((x == 0) && (y == 0));
-                zig = zig || ((x == dx-1) && (y == dy-1));
-                zig = zig && !((x == dx-1) && (y == 0));
-                zig = zig && !((x == 0) && (y == dy-1));
 
-                if (zig)
+                if (r <= zigProb)
                 {
                     //  D---C
                     //  |f /|
@@ -180,19 +182,19 @@ public class SquareGrid : Graph
                     //  |/  |
                     //  A---B
 
-                    HalfEdge eac = AddEdge(va, vc);
-                    HalfEdge eca = eac.flip;
+                    HalfEdge eac = graph.AddEdge(va, vc);
+                    HalfEdge eca = eac.Flip;
 
                     // triangle ABC
                     eca.face = eab.face;
-                    eca.next = eab;
-                    ebc.next = eca;
+                    eca.Next = eab;
+                    ebc.Next = eca;
 
                     // triangle ACD
-                    Face f = AddFace(eac);
+                    Face f = graph.AddFace(eac);
                     eac.face = f;
-                    eac.next = ecd;
-                    eda.next = eac;
+                    eac.Next = ecd;
+                    eda.Next = eac;
                 }
                 else
                 {
@@ -202,19 +204,19 @@ public class SquareGrid : Graph
                     //  |  \|
                     //  A---B
 
-                    HalfEdge ebd = AddEdge(vb, vd);
-                    HalfEdge edb = ebd.flip;
+                    HalfEdge ebd = graph.AddEdge(vb, vd);
+                    HalfEdge edb = ebd.Flip;
 
                     // triangle ABD
                     ebd.face = eab.face;
-                    ebd.next = eda;
-                    eab.next = ebd;
+                    ebd.Next = eda;
+                    eab.Next = ebd;
 
                     // triangle BCD
-                    Face f = AddFace(edb);
+                    Face f = graph.AddFace(edb);
                     edb.face = f;
-                    edb.next = ebc;
-                    ecd.next = edb;
+                    edb.Next = ebc;
+                    ecd.Next = edb;
                 }
             }
         }
