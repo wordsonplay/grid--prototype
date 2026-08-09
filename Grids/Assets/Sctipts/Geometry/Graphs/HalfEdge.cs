@@ -14,6 +14,8 @@ namespace WordsOnPlay.Geometry
 public class HalfEdge 
 {
     public Vertex fromVertex;
+    public Vertex ToVertex => next.fromVertex;
+
     public Face face;
 
     private HalfEdge next, prev;
@@ -23,7 +25,10 @@ public class HalfEdge
         set 
         { 
             next = value; 
-            value.prev = this;
+            if (value != null)
+            {
+                value.prev = this;
+            }
         }
     }
     public HalfEdge Prev
@@ -32,7 +37,10 @@ public class HalfEdge
         set 
         { 
             prev = value; 
-            value.next = this;
+            if (value != null)
+            {
+                value.next = this;            
+            }
         }
     }
 

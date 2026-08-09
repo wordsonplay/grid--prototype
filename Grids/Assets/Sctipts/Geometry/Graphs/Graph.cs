@@ -78,6 +78,11 @@ namespace WordsOnPlay.Geometry
         {
             HalfEdge e = new HalfEdge(va);
             edges.Add(e);
+
+            if (va.edge == null)
+            {
+                va.edge = e;
+            }
             return e;
         }
 
@@ -89,6 +94,15 @@ namespace WordsOnPlay.Geometry
 
             edges.Add(eAB);
             edges.Add(eBA);
+
+            if (va.edge == null)
+            {
+                va.edge = eAB;
+            }
+            if (vb.edge == null)
+            {
+                vb.edge = eBA;
+            }
 
             // return the forward edge
             return eAB;

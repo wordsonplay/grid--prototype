@@ -5,6 +5,7 @@
  * For Unity Version: 2022.3
  */
 
+using System.Collections.Generic;
 using UnityEngine;
 using WordsOnPlay.Utils;
 
@@ -19,6 +20,10 @@ public class GeometryGizmos
     public const float edgeArrowLength = 0.05f;
     
     private static Mesh triangleMesh = CreateTriangleMesh();
+
+    private static Dictionary<Vertex, string> vertexErrors = new Dictionary<Vertex, string>();
+    private static Dictionary<Vertex, string> edgeErrors = new Dictionary<Vertex, string>();
+    private static Dictionary<Vertex, string> faceErrors = new Dictionary<Vertex, string>();
 
     private static Mesh CreateTriangleMesh()
     {

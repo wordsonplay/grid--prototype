@@ -20,10 +20,11 @@ public class SquareGridFactory : IGraphFactory
 {
 
 #region State
-    public Vector2Int dimension;
-    public System.Random rng;
-    public float jitter = 0;
-    public float zigProb = 0.5f;
+    private Vector2Int dimension;
+    private System.Random rng;
+    private float scale = 2;
+    private float jitter = 0;
+    private float zigProb = 0.5f;
 
     private Graph graph;
     private Vertex[,] vertices;
@@ -32,17 +33,18 @@ public class SquareGridFactory : IGraphFactory
 #endregion
     
 #region Constructor
-    public SquareGridFactory(int width, int height, float zigProb = 0.5f, float jitter = 0, System.Random rng = null) :
-        this(new Vector2Int(width, height), zigProb, jitter, rng)
+    public SquareGridFactory(int width, int height, float zigProb = 0.5f, float jitter = 0, float scale = 2.5f, System.Random rng = null) :
+        this(new Vector2Int(width, height), zigProb, jitter, scale, rng)
     {
     }
 
-    public SquareGridFactory(Vector2Int dimension, float zigProb = 0.5f, float jitter = 0, System.Random rng = null)
+    public SquareGridFactory(Vector2Int dimension, float zigProb = 0.5f, float jitter = 0, float scale = 2.5f, System.Random rng = null)
     {
         this.dimension = dimension;
-        this.rng = (rng == null ? new System.Random() : rng);
+        this.rng = rng ?? new System.Random();
         this.zigProb = zigProb;
         this.jitter = jitter;
+        this.scale = scale;
     }
 #endregion
 
@@ -68,7 +70,7 @@ public class SquareGridFactory : IGraphFactory
         {
             for (int y = 0; y <= dy; y++)
             {
-                Vector2 p = new Vector2(x,y);
+                Vector2 p = new Vector2(x,y) * scale;
 
                 float angle = 360 * (float)rng.NextDouble();
                 float radius = jitter * (float)rng.NextDouble();
@@ -132,6 +134,8 @@ public class SquareGridFactory : IGraphFactory
             }
         }
 
+        graph.Exterior.edge = hEdges[0,0].Flip;
+
         // Set external faces
         for (int x = 0; x < dx; x++)
         {
@@ -148,7 +152,7 @@ public class SquareGridFactory : IGraphFactory
             vEdges[0, y].Next = (y == dy - 1 ? hEdges[0, dy] : vEdges[0, y + 1]);
 
             vEdges[dx, y].Flip.face = graph.Exterior;
-            vEdges[dx, y].Flip.Next = (y == 0 ? hEdges[dx - 1, 0] : vEdges[dx, y - 1].Flip);
+            vEdges[dx, y].Flip.Next = (y == 0 ? hEdges[dx - 1, 0].Flip : vEdges[dx, y - 1].Flip);
         }
     }
 
@@ -169,7 +173,7 @@ public class SquareGridFactory : IGraphFactory
 
                 HalfEdge eab = hEdges[x, y];
                 HalfEdge ebc = vEdges[x + 1, y];
-                HalfEdge ecd = hEdges[x + 1, y].Flip;
+                HalfEdge ecd = hEdges[x, y + 1].Flip;
                 HalfEdge eda = vEdges[x, y].Flip;
 
                 float r = (float)rng.NextDouble();
@@ -193,6 +197,9 @@ public class SquareGridFactory : IGraphFactory
                     // triangle ACD
                     Face f = graph.AddFace(eac);
                     eac.face = f;
+                    ecd.face = f;
+                    eda.face = f;
+
                     eac.Next = ecd;
                     eda.Next = eac;
                 }
@@ -215,6 +222,9 @@ public class SquareGridFactory : IGraphFactory
                     // triangle BCD
                     Face f = graph.AddFace(edb);
                     edb.face = f;
+                    ebc.face = f;
+                    ecd.face = f;
+
                     edb.Next = ebc;
                     ecd.Next = edb;
                 }

@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace WordsOnPlay.Geometry
 {
@@ -236,21 +237,27 @@ namespace WordsOnPlay.Geometry
 
 #region Verify structure
 
-        public static Dictionary<Vertex, string> VerifyVertices(Graph graph, Dictionary<Vertex, string> dest)
+        public static void Verify(Graph graph)
+        {
+            GraphOperations.VerifyVertices(graph);
+            GraphOperations.VerifyEdges(graph);
+            GraphOperations.VerifyFaces(graph);
+
+        }
+
+        public static void VerifyVertices(Graph graph)
         {
             foreach (Vertex v in graph.Vertices)
             {       
-                dest[v] = VerifyVertex(graph, v);
+                VerifyVertex(graph, v);
             }
-
-            return dest;
         }
 
-        public static string VerifyVertex(Graph graph, Vertex vertex)
+        public static void VerifyVertex(Graph graph, Vertex vertex)
         {
             if (vertex.edge == null)
             {
-                return $"{vertex}.edge == null";
+                Debug.LogError($"{vertex}.edge == null");
             }
             else 
             {
@@ -260,88 +267,95 @@ namespace WordsOnPlay.Geometry
                 {
                     if (!graph.Edges.Contains(e))
                     {
-                        return $"{e} is not in graph";
+                        Debug.LogError($"{e} is not in graph");
                     }
-                    if (e.fromVertex != vertex)
+                    if (e.fromVertex == null)
                     {
-                        return $"{e}.fromVertex == {e.fromVertex} != {vertex}";
+                        Debug.LogError($"e.fromVertex == null != {vertex}");
+                    }
+                    else if (e.fromVertex != vertex)
+                    {
+                        Debug.LogError($"{e}.fromVertex == {e.fromVertex} != {vertex}");
                     }
                     e = e.Flip.Next;
                 }   
                 while (e != vertex.edge);                 
             }
-            return null;
         }
 
-        public static Dictionary<HalfEdge, string> VerifyEdges(Graph graph, Dictionary<HalfEdge, string> dest)
+        public static void VerifyEdges(Graph graph)
         {
             foreach (HalfEdge e in graph.Edges)
             {
-                dest[e] = VerifyEdge(graph, e);
+                VerifyEdge(graph, e);
             }
-
-            return dest;
         }
 
-        public static string VerifyEdge(Graph graph, HalfEdge edge)
+        public static void VerifyEdge(Graph graph, HalfEdge edge)
         {
             if (edge.Flip == null)
             {
-                return $"{edge}.Flip == null";
+                Debug.LogError($"{edge}.Flip == null");
             }
             else if (edge.Flip.Flip != edge)
             {
-                return $"{edge}.Flip.Flip == {edge.Flip.Flip} != {edge}";
+                Debug.LogError($"{edge}.Flip.Flip == {edge.Flip.Flip} != {edge}");
             }
 
             if (edge.Next == null)
             {
-                return $"{edge}.Next == null";                
+                Debug.LogError($"{edge}.Next == null");                
             }
             else if (edge.Next.Prev != edge)
             {
-                return $"{edge}.Next.Prev == {edge.Next.Prev} != {edge}";                
+                Debug.LogError($"{edge}.Next.Prev == {edge.Next.Prev} != {edge}");
+            }
+
+            if (edge.Next != null && edge.Flip != null)
+            {
+                if (edge.ToVertex != edge.Flip.fromVertex)
+                {
+                    Debug.LogError($"{edge}.ToVertex == {edge.ToVertex} != {edge.Flip.fromVertex}");                    
+                }
             }
 
             if (edge.Prev == null)
             {
-                return $"{edge}.Prev == null";                
+                Debug.LogError($"{edge}.Prev == null");
             }
             else if (edge.Prev.Next != edge)
             {
-                return $"{edge}.Prev.Next == {edge.Prev.Next} != {edge}";                
+                Debug.LogError($"{edge}.Prev.Next == {edge.Prev.Next} != {edge}");                
             }
 
             if (edge.fromVertex == null)
             {
-                return $"{edge}.fromVertex == null";
+                Debug.LogError($"{edge}.fromVertex == null");
             }
 
             if (edge.face == null)
             {
-                return $"{edge}.face == null";
+                Debug.LogError($"{edge}.face == null");
             }
 
-            return null;
         }
 
-        public static Dictionary<Face, string> VerifyFaces(Graph graph, Dictionary<Face, string> dest)
+        public static void VerifyFaces(Graph graph)
         {
-            dest[graph.Exterior] = VerifyFace(graph, graph.Exterior);
+            VerifyFace(graph, graph.Exterior);
 
             foreach (Face f in graph.Faces)
             {
-                dest[f] = VerifyFace(graph, f);
+                VerifyFace(graph, f);
             }
 
-            return dest;
         }
 
-        public static string VerifyFace(Graph graph, Face face)
+        public static void VerifyFace(Graph graph, Face face)
         {
             if (face.edge == null)
             {
-                return $"{face}.edge == null";
+                Debug.LogError($"{face}.edge == null");
             }
             else
             {   
@@ -350,17 +364,15 @@ namespace WordsOnPlay.Geometry
                 {
                     if (!graph.Edges.Contains(e))
                     {
-                        return $"{e} is not in graph";
+                        Debug.LogError($"{e} is not in graph");
                     }
                     if (e.face != face)
                     {
-                        return $"{e}.face == {e.face} != {face}";
+                        Debug.LogError($"{e}.face == {e.face} != {face}");
                     }
                     e = e.Next;
                 } while (e != face.edge);
             }
-
-            return null;
         }
 
 #endregion
@@ -397,6 +409,103 @@ namespace WordsOnPlay.Geometry
             }
             return count;
         }
+#endregion
+ 
+#region Neighbours
+        /// <summary>
+        /// Find the set of faces that share an edge with the given one
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="face"></param>
+        /// <param name="set"></param>
+        /// <returns>The set of neighbours</returns>
+
+        static public HashSet<Face> EdgeNeighbours(Graph graph, Face face, HashSet<Face> set)
+        {
+            set.Clear();
+            HalfEdge e = face.edge;
+            do
+            {
+                set.Add(e.Flip.face);
+                e = e.Next;
+            } while (e != face.edge);
+
+            return set;
+        }
+
+        /// <summary>
+        /// Find the set of faces that share a vertex with the given one
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="face"></param>
+        /// <param name="set"></param>
+        /// <returns>The set of neighbours</returns>
+
+        static public HashSet<Face> VertexNeighbours(Graph graph, Face face, HashSet<Face> set)
+        {
+            set.Clear();
+            HalfEdge e = face.edge;
+            do
+            {
+                HalfEdge e1 = e.Flip.Prev;
+                e = e.Next;
+
+                while (e1 != e.Flip)
+                {                
+                    set.Add(e1.face);
+                    e1 = e1.Flip.Prev;
+                }
+
+            } while (e != face.edge);
+
+            return set;
+        }
+
+        private delegate HashSet<Face> Neighbourhood(Graph graph, Face face, HashSet<Face> set);
+
+        static private HashSet<Face> Neighbours(Neighbourhood neighbourhood, Graph graph, Face face, int depth, HashSet<Face> set)
+        {
+            // iterative deepening search using given neighbourhood function
+
+            Queue<Face> horizon = new Queue<Face>();
+            Queue<Face> nextHorizon = new Queue<Face>();
+            horizon.Enqueue(face);
+            set.Add(face);
+            HashSet<Face> neighbours = new HashSet<Face>();
+
+            for (int d = 0; d < depth; d++)
+            {
+                while (horizon.Count > 0)
+                {
+                    Face f = horizon.Dequeue();
+
+                    neighbourhood(graph, f, neighbours);
+                    foreach (Face f1 in neighbours)
+                    {
+                        if (!set.Contains(f1))
+                        {
+                            nextHorizon.Enqueue(f1);
+                            set.Add(f1);
+                        }
+                    }                                            
+                }
+
+                (horizon, nextHorizon) = (nextHorizon, horizon);
+            }
+
+            return set;
+        }
+
+        static private HashSet<Face> EdgeNeighbours(Graph graph, Face face, int depth, HashSet<Face> set)
+        {
+            return Neighbours(EdgeNeighbours, graph, face, depth, set);
+        }
+
+        static private HashSet<Face> VertexNeighbours(Graph graph, Face face, int depth, HashSet<Face> set)
+        {
+            return Neighbours(VertexNeighbours, graph, face, depth, set);
+        }
+
 #endregion
     }
 

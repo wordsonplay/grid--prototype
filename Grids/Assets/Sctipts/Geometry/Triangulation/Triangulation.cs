@@ -124,37 +124,7 @@ public partial class Triangulation : IEnumerable<Triangle>
 
     public void Verify()
     {
-        var vertexErrors = new Dictionary<Vertex,string>();
-        var edgeErrors = new Dictionary<HalfEdge,string>(); 
-        var faceErrors = new Dictionary<Face,string>();         
-
-        GraphOperations.VerifyVertices(graph, vertexErrors);
-        foreach (Vertex v in vertexErrors.Keys)
-        {
-            if (vertexErrors[v] != null)
-            {
-                Debug.LogWarning($"[Triangulation.Verify] {v}: {vertexErrors[v]}");
-            }            
-        }
-
-        GraphOperations.VerifyEdges(graph, edgeErrors);
-        foreach (HalfEdge e in edgeErrors.Keys)
-        {
-            if (edgeErrors[e] != null)
-            {
-                Debug.LogWarning($"[Triangulation.Verify] {e}: {edgeErrors[e]}");
-            }            
-        }
-
-        GraphOperations.VerifyFaces(graph, faceErrors);
-        foreach (Face f in faceErrors.Keys)
-        {
-            if (faceErrors[f] != null)
-            {
-                Debug.LogWarning($"[Triangulation.Verify] {f}: {faceErrors[f]}");
-            }            
-        }
-
+        GraphOperations.Verify(graph);
     }
 
     public Graph MakeGraph() 

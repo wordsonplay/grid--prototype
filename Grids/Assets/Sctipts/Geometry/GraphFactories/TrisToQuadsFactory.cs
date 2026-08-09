@@ -43,20 +43,26 @@ public class TrisToQuadsFactory
         Queue<Face> queue = new Queue<Face>(faces);
 
         HashSet<Face> isolatedTriangles = new HashSet<Face>();
-        HashSet<Face> merged = new HashSet<Face>();
+        Dictionary<Face,bool> merged = new Dictionary<Face,bool>();
+        foreach (Face f in faces)
+        {
+            merged[f] = false;            
+        }
+        merged[graph.Exterior] = true;
+
         HashSet<Face> quads = new HashSet<Face>();
         List<HalfEdge> validEdges = new List<HalfEdge>(3);
 
         while (queue.Count > 0)
         {
             Face face = queue.Dequeue();
-            if (!merged.Contains(face))
+            if (!merged[face])
             {
                 validEdges.Clear();
                 HalfEdge e = face.edge;
                 do
                 {
-                    if (e.Flip.face != graph.Exterior)
+                    if (!merged[e.Flip.face])
                     {
                         validEdges.Add(e);                    
                     }
@@ -72,13 +78,13 @@ public class TrisToQuadsFactory
                 {
                     int r = rng.Next(validEdges.Count);
                     e = validEdges[r];
-                    merged.Add(face);
-                    merged.Add(e.Flip.face);
+                    merged[face] = true;
+                    merged[e.Flip.face] = true;
                     Face quad = GraphOperations.DeleteEdge(graph, e);
                     quads.Add(quad);
                 }                
             }
-        }
+        }   
 
         return graph;
     }
