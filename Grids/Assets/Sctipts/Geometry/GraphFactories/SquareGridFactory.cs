@@ -23,7 +23,6 @@ public class SquareGridFactory : IGraphFactory
     private Vector2Int dimension;
     private System.Random rng;
     private float scale = 2;
-    private float jitter = 0;
     private float zigProb = 0.5f;
 
     private Graph graph;
@@ -33,17 +32,16 @@ public class SquareGridFactory : IGraphFactory
 #endregion
     
 #region Constructor
-    public SquareGridFactory(int width, int height, float zigProb = 0.5f, float jitter = 0, float scale = 2.5f, System.Random rng = null) :
-        this(new Vector2Int(width, height), zigProb, jitter, scale, rng)
+    public SquareGridFactory(int width, int height, float zigProb = 0.5f, float scale = 1f, System.Random rng = null) :
+        this(new Vector2Int(width, height), zigProb, scale, rng)
     {
     }
 
-    public SquareGridFactory(Vector2Int dimension, float zigProb = 0.5f, float jitter = 0, float scale = 2.5f, System.Random rng = null)
+    public SquareGridFactory(Vector2Int dimension, float zigProb = 0.5f, float scale = 1f, System.Random rng = null)
     {
         this.dimension = dimension;
         this.rng = rng ?? new System.Random();
         this.zigProb = zigProb;
-        this.jitter = jitter;
         this.scale = scale;
     }
 #endregion
@@ -52,7 +50,7 @@ public class SquareGridFactory : IGraphFactory
     public Graph MakeGraph()
     {
         graph = new Graph();
-        MakeVertices(jitter);
+        MakeVertices();
         MakeGridEdges();
         MakeSquares();
         MakeTriangles(zigProb);        
@@ -60,7 +58,7 @@ public class SquareGridFactory : IGraphFactory
         return graph;
     }
 
-    private void MakeVertices(float jitter)
+    private void MakeVertices()
     {
         int dx = dimension.x;
         int dy = dimension.y;
@@ -71,12 +69,6 @@ public class SquareGridFactory : IGraphFactory
             for (int y = 0; y <= dy; y++)
             {
                 Vector2 p = new Vector2(x,y) * scale;
-
-                float angle = 360 * (float)rng.NextDouble();
-                float radius = jitter * (float)rng.NextDouble();
-                Vector2 offset = jitter * Vector2.right.Rotate(angle);
-                p += offset;
-
                 vertices[x, y] = graph.AddVertex(p, $"v({x},{y})");
             }
         }

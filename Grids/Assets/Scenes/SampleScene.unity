@@ -148,9 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3c0a9c37fcb64d82a2a442e17916494, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridTest
-  width: 20
-  height: 20
-  zigProb: 0
+  radius: 4
 --- !u!4 &344681836
 Transform:
   m_ObjectHideFlags: 0
